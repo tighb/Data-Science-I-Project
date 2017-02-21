@@ -1,9 +1,16 @@
 ---
 title: "Preliminary Analysis - Effect of Economic Crisis"
-author: "Sneha Vasanth"
-date: "February 18, 2017"
+author: "Sneha Vasanth, Janani Kumar, Tigh Bradley, Gaurav Gada"
+date: "February 21, 2017"
 output: html_document
 ---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(tidyr)
+library(dplyr)
+```
 
 Conduct a first-pass descriptive analysis of your dataset. Produce tables and graphs that show exactly what data you have, and that contain summary statistics about the data. Questions to answer for each data source include:
 How many unique observations to you have?
@@ -17,7 +24,6 @@ Provide a bullet-list of the next 5-10 tasks you will perform in analyzing your 
 Cleaning up the data!
 
 ```{r load_cpi}
-library(tidyr)
 cpi = read.csv("CPI_World_Bank.csv",check.names = FALSE)
 #Get country and indicator column names and remove spaces using make.names
 country_indicator_names <- make.names(names(cpi[c(1:4)])) 
@@ -148,8 +154,6 @@ attach(labor_data)
 
 ## Exploratory Analysis
 
-1.CPI
-
 How many unique observations to you have?
 
 The number of unique observations for CPI, GDP and unemployment respectively are:
@@ -163,34 +167,50 @@ nrow(labor_data[!is.na(unemp),])
 
 What information/features/characteristics do you have for each observation?
 
-
-```{r check_redundant_col}
-unique(clean_cpi$Indicator.Name)
-unique(clean_cpi$Indicator.Code)
+```{r}
+# TODO
 ```
-
-The Indicator name and indicator code are the same for all the rows. Hence, we can remove them.
 
 
 What are the min/max/mean/median/sd values for each of these features?
+
 ```{r summary_stats_cpi}
-summary(cpi_data$CPI,na.rm = TRUE)
-sd(cpi_data$CPI, na.rm = TRUE)
+summary(labor_data$CPI,na.rm = TRUE)
+sd(labor_data$CPI, na.rm = TRUE)
+
+summary(labor_data$gdp,na.rm = TRUE)
+sd(labor_data$gdp, na.rm = TRUE)
+
+summary(labor_data$unemp,na.rm = TRUE)
+sd(labor_data$unemp, na.rm = TRUE)
 ```
 
 What is the distribution of the core features (show a histogram)?
-```{r hist_cpi}
-hist(cpi_data$CPI, xlab = "CPI", main = "Histogram of CPI values")
-```
 
-Most of the CPI values lie between 0 to 150, with the peak between 0 to 50.
+```{r hist_cpi}
+ggplot(labor_data, aes(x = CPI)) +
+  geom_histogram(fill = "white",
+                 color = "black",
+                 binwidth = 5)
+
+ggplot(labor_data, aes(x = gdp)) +
+  geom_histogram(fill = "white",
+                 color = "black",
+                 binwidth = 500) +
+  xlim(0, 75000)
+
+ggplot(labor_data, aes(x = unemp)) +
+  geom_histogram(fill = "white",
+                 color = "black",
+                 binwidth = 0.5)
+```
+# TODO write on these
 
 Are there obvious trends in the data (over time, across subgroups, etc.), and are the differences statistically significant?
-```{r plot_trends}
-library(ggplot2)
-library(dplyr)
 
-cpi_data_1 <- cpi_data %>%
+```{r plot_trends}
+
+cpi_data_1 <- labor_data %>%
   select(Country.Name,Country.Code,Year,CPI) %>%
   filter(Year >= 2000 & Year<= 2015 & Country.Code == "USA") %>%
   group_by(Year)
@@ -200,7 +220,7 @@ ggplot(cpi_data_1,aes(x = Year, y = CPI))+geom_point(na.rm = TRUE)
 
 
 ```{r}
-cpi_data_2 <- cpi_data %>%
+cpi_data_2 <- labor_data %>%
   select(Country.Name,Country.Code,Year,CPI) %>%
   filter(Year >= 2000 & Year<= 2015 & (Country.Code =='IND' | Country.Code == 'CAN'| Country.Code == 'CHN' | Country.Code == 'USA')) %>%
   group_by(Year)
@@ -274,11 +294,11 @@ hist(unemployment_data$Unemployment.Rate, xlab = "Unemployment Rate", main = "Hi
 Are there obvious trends in the data (over time, across subgroups, etc.), and are the differences statistically significant?
 
 ```{r}
-unemployment_data_1 <- unemployment_data %>%
-  select(Country.Name,Country.Code,Year,Unemployment.Rate) %>%
+unemployment_data_1 <- labor_data %>%
+  select(Country.Name,Country.Code,Year,unemp) %>%
   filter(Year >= 2000 & Year<= 2015 & (Country.Code =='IND' | Country.Code == 'CAN' | Country.Code == 'USA'|Country.Code == 'CHN')) %>%
   group_by(Year)
-ggplot(unemployment_data_1, aes(x = Year, y = Unemployment.Rate,col = Country.Code, group = Country.Code))+geom_line()
+ggplot(unemployment_data_1, aes(x = Year, y = unemp,col = Country.Code, group = Country.Code))+geom_line()
 ```
 
 We see that the unemployment rates increases drastically in Canada and USA after 2007 crisis(2008 recession). 
