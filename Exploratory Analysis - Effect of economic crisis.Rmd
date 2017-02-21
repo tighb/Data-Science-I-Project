@@ -14,28 +14,11 @@ Are there obvious trends in the data (over time, across subgroups, etc.), and ar
 What are the other salient aspects of the data (e.g. geospatial factors, text content, etc.)
 Provide a bullet-list of the next 5-10 tasks you will perform in analyzing your dataset
 
-#Exploratory Analysis 
-
-1.CPI
-
-How many unique observations to you have?
+Cleaning up the data!
 
 ```{r load_cpi}
-cpi = read.csv("CPI_World_Bank.csv",check.names = FALSE)
-dim(cpi)
-```
-There are 264 unique observations.
-
-What information/features/characteristics do you have for each observation?
-
-```{r explore_cpi}
-head(cpi)
-```
-
-We have the country name, country code, indicator name and the CPI values from 1960 to 2016. The main indicator we are looking at is the CPI value.
-
-```{r clean_cpi}
 library(tidyr)
+cpi = read.csv("CPI_World_Bank.csv",check.names = FALSE)
 #Get country and indicator column names and remove spaces using make.names
 country_indicator_names <- make.names(names(cpi[c(1:4)])) 
 #country_indicator_names
@@ -47,13 +30,140 @@ year_column_names <- names(cpi[c(5:ncol(cpi))])
 #Reassign the modified column names to actual column names
 names(cpi) <- c(country_indicator_names,year_column_names)
 names(cpi)
-```
 
-```{r clean_gather_cpi}
 #Gather all year column names into a new column called Year and assign its values to a column called CPI
 clean_cpi <- gather(cpi,Year,CPI,-Country.Name,-Country.Code,-Indicator.Name,-Indicator.Code)
+cpi_data <- clean_cpi[,!colnames(clean_cpi) %in% c("Indicator.Name","Indicator.Code")]
 head(clean_cpi)
+
+
+cpi = read.csv("CPI_World_Bank.csv",check.names = FALSE)
+#Get country and indicator column names and remove spaces using make.names
+country_indicator_names <- make.names(names(cpi[c(1:4)]))
+#country_indicator_names
+
+#Get year column names
+year_column_names <- names(cpi[c(5:ncol(cpi))])
+#year_column_names
+
+#Reassign the modified column names to actual column names
+names(cpi) <- c(country_indicator_names,year_column_names)
+names(cpi)
+
+#Gather all year column names into a new column called Year and assign its values to a column called CPI
+clean_cpi <- gather(cpi,Year,CPI,-Country.Name,-Country.Code,-Indicator.Name,-Indicator.Code)
+cpi_data <- clean_cpi[,!colnames(clean_cpi) %in% c("Indicator.Name","Indicator.Code")]
+head(cpi_data)
+
+unemp = read.csv("Unemployment_ILO.csv",check.names = FALSE)
+country_indicator_names <- make.names(names(unemp[c(1:4)])) 
+#country_indicator_names
+
+#Get year column names
+year_column_names <- names(unemp[c(5:ncol(unemp))])
+#year_column_names
+
+#Reassign the modified column names to actual column names
+names(unemp) <- c(country_indicator_names,year_column_names)
+names(unemp)
+
+#Gather all year column names into a new column called Year and assign its values to a column called unemp
+clean_unemp <- gather(unemp,Year,unemp,-Country.Name,-Country.Code,-Indicator.Name,-Indicator.Code)
+unemp_data <- clean_unemp[,!colnames(clean_unemp) %in% c("Indicator.Name","Indicator.Code")]
+head(clean_unemp)
+
+#Get country and indicator column names and remove spaces using make.names
+country_indicator_names <- make.names(names(unemp[c(1:4)]))
+#country_indicator_names
+
+#Get year column names
+year_column_names <- names(unemp[c(5:ncol(unemp))])
+#year_column_names
+
+#Reassign the modified column names to actual column names
+names(unemp) <- c(country_indicator_names,year_column_names)
+names(unemp)
+
+#Gather all year column names into a new column called Year and assign its values to a column called unemp
+clean_unemp <- gather(unemp,Year,unemp,-Country.Name,-Country.Code,-Indicator.Name,-Indicator.Code)
+unemp_data <- clean_unemp[,!colnames(clean_unemp) %in% c("Indicator.Name","Indicator.Code")]
+head(unemp_data)
+
+
+gdp = read.csv("gdp_data_wb.csv",check.names = FALSE)
+country_indicator_names <- make.names(names(gdp[c(1:4)])) 
+#country_indicator_names
+
+#Get year column names
+year_column_names <- names(gdp[c(5:ncol(gdp))])
+#year_column_names
+
+#Reassign the modified column names to actual column names
+names(gdp) <- c(country_indicator_names,year_column_names)
+names(gdp)
+
+#Gather all year column names into a new column called Year and assign its values to a column called gdp
+clean_gdp <- gather(gdp,Year,gdp,-Country.Name,-Country.Code,-Indicator.Name,-Indicator.Code)
+gdp_data <- clean_gdp[,!colnames(clean_gdp) %in% c("Indicator.Name","Indicator.Code")]
+head(clean_gdp)
+
+#Get country and indicator column names and remove spaces using make.names
+country_indicator_names <- make.names(names(gdp[c(1:4)]))
+#country_indicator_names
+
+#Get year column names
+year_column_names <- names(gdp[c(5:ncol(gdp))])
+#year_column_names
+
+#Reassign the modified column names to actual column names
+names(gdp) <- c(country_indicator_names,year_column_names)
+names(gdp)
+
+#Gather all year column names into a new column called Year and assign its values to a column called gdp
+clean_gdp <- gather(gdp,Year,gdp,-Country.Name,-Country.Code,-Indicator.Name,-Indicator.Code)
+gdp_data <- clean_gdp[,!colnames(clean_gdp) %in% c("Indicator.Name","Indicator.Code")]
+head(gdp_data)
+
+
+# Join all data
+gdp_cpi = merge(gdp_data, cpi_data, by=c("Country.Code","Year"), all = T) # NA's match
+
+labor_data = merge(gdp_cpi, unemp_data, by=c("Country.Code","Year"), all = T) # NA's match
+
+drops = c("Country.Name.y","Country.Name.x")
+labor_data = labor_data[ , !(names(labor_data) %in% drops)]
+
+names(labor_data)
+
+labor_data = labor_data[c("Country.Name", "Country.Code", "Year", "gdp", "unemp", "CPI")]
+
+# Clean up data
+labor_data = labor_data[!(is.na(labor_data$unemp) & is.na(labor_data$CPI) & is.na(labor_data$gdp)),]
+
+# Clean up the working space
+rm(list = ls()[grep("labor", ls(), invert = T)])
+
+attach(labor_data)
 ```
+
+## Exploratory Analysis
+
+1.CPI
+
+How many unique observations to you have?
+
+The number of unique observations for CPI, GDP and unemployment respectively are:
+
+```{r}
+nrow(labor_data[!is.na(CPI),])
+nrow(labor_data[!is.na(gdp),])
+nrow(labor_data[!is.na(unemp),])
+```
+
+
+What information/features/characteristics do you have for each observation?
+
+
 ```{r check_redundant_col}
 unique(clean_cpi$Indicator.Name)
 unique(clean_cpi$Indicator.Code)
@@ -61,10 +171,6 @@ unique(clean_cpi$Indicator.Code)
 
 The Indicator name and indicator code are the same for all the rows. Hence, we can remove them.
 
-```{r remove_redudant_col}
-cpi_data <- clean_cpi[,!colnames(clean_cpi) %in% c("Indicator.Name","Indicator.Code")]
-head(cpi_data)
-```
 
 What are the min/max/mean/median/sd values for each of these features?
 ```{r summary_stats_cpi}
